@@ -1,0 +1,532 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { Truck, FuelDataPoint } from './types';
+import { TruckList } from './components/TruckList';
+import { FuelChart } from './components/FuelChart';
+import { AIInsightPanel } from './components/AIInsightPanel';
+import { FleetChat } from './components/FleetChat';
+import { LayoutDashboard, LogOut, Search, Bell, Menu, Droplet, Gauge, Map, ShieldCheck, Zap, BarChart3, Radio, Wifi, Battery, Check } from 'lucide-react';
+
+// --- MOCK DATA GENERATOR ---
+const generateMockData = (): Truck[] => {
+  const trucks: Truck[] = [];
+  const now = new Date();
+  
+  for (let i = 1; i <= 5; i++) {
+    const history: FuelDataPoint[] = [];
+    let currentLevel = 85 - (Math.random() * 20);
+    
+    for (let j = 12; j >= 0; j--) {
+      const time = new Date(now.getTime() - j * 3600000); // Hourly points
+      // Simulate consumption
+      const consumption = Math.random() * 5;
+      currentLevel -= (consumption / 2); // Slow drain
+      if (currentLevel < 0) currentLevel = 100; // Refuel simulation
+      
+      history.push({
+        time: time.getHours() + ':00',
+        level: Math.round(currentLevel),
+        consumptionRate: parseFloat(consumption.toFixed(1))
+      });
+    }
+
+    trucks.push({
+      id: `TRK-${100 + i}`,
+      name: `Orca Hauler ${i}`,
+      driver: ['John D.', 'Sarah C.', 'Mike R.', 'Lisa M.', 'Tom B.'][i-1],
+      status: i === 2 ? 'Idling' : i === 4 ? 'Stopped' : 'Moving',
+      fuelLevel: Math.round(history[history.length - 1].level),
+      capacity: 300,
+      currentMpg: 6.5 + (Math.random() * 2),
+      location: ['I-40 Westbound', 'Dallas Depot', 'Route 66', 'Phoenix Yard', 'I-5 Northbound'][i-1],
+      history: history,
+      lastUpdated: 'Just now'
+    });
+  }
+  return trucks;
+};
+
+const LOGO_URL = "https://pplx-res.cloudinary.com/image/upload/v1740520626/user_uploads/hldBDrhHROkAZXk/image.jpg";
+
+export default function App() {
+  const [view, setView] = useState<'landing' | 'dashboard'>('landing');
+  const [trucks, setTrucks] = useState<Truck[]>([]);
+  const [selectedTruckId, setSelectedTruckId] = useState<string>('');
+  
+  // Initialization
+  useEffect(() => {
+    const data = generateMockData();
+    setTrucks(data);
+    setSelectedTruckId(data[0].id);
+  }, []);
+
+  // Live Data Simulation
+  useEffect(() => {
+    if (view !== 'dashboard') return;
+
+    const interval = setInterval(() => {
+      setTrucks(currentTrucks => 
+        currentTrucks.map(truck => {
+          // Skip if stopped
+          if (truck.status === 'Stopped') return truck;
+          
+          // Logic for simulation
+          const isIdling = truck.status === 'Idling';
+          const drainRate = isIdling ? 0.05 : 0.15; // Percent drop per tick
+          
+          let newFuelLevel = truck.fuelLevel - (drainRate + (Math.random() * 0.05));
+          
+          // Refuel if empty (simulation loop)
+          if (newFuelLevel <= 0) newFuelLevel = 100;
+
+          // Update current history point slightly
+          const newHistory = [...truck.history];
+          const lastPoint = {...newHistory[newHistory.length - 1]};
+          lastPoint.level = Math.round(newFuelLevel);
+          newHistory[newHistory.length - 1] = lastPoint;
+
+          return {
+            ...truck,
+            fuelLevel: parseFloat(newFuelLevel.toFixed(1)),
+            history: newHistory
+          };
+        })
+      );
+    }, 2000); // Update every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [view]);
+
+  const selectedTruck = trucks.find(t => t.id === selectedTruckId) || trucks[0];
+
+  // Landing Page Component
+  const LandingPage = () => (
+    <div className="min-h-screen bg-white flex flex-col font-sans text-slate-900">
+      {/* Header */}
+      <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100 w-full py-4 px-8 flex justify-between items-center max-w-7xl mx-auto transition-all">
+        <div className="flex items-center gap-3">
+          <img src={LOGO_URL} alt="Orca Cargo Logo" className="h-10 w-10 rounded-full object-cover border-2 border-orca-900" />
+          <span className="text-xl font-bold tracking-tight text-orca-900">ORCA CARGO</span>
+        </div>
+        <nav className="hidden md:flex gap-8 font-medium text-slate-600 text-sm">
+          <a href="#solutions" className="hover:text-orca-600 transition">Solutions</a>
+          <a href="#hardware" className="hover:text-orca-600 transition">Hardware</a>
+          <a href="#pricing" className="hover:text-orca-600 transition">Pricing</a>
+        </nav>
+        <button 
+          onClick={() => setView('dashboard')}
+          className="bg-orca-900 text-white px-5 py-2 rounded-full font-semibold text-sm hover:bg-orca-700 transition shadow-md hover:shadow-lg"
+        >
+          Fleet Login
+        </button>
+      </header>
+
+      {/* Hero */}
+      <main className="flex-1 flex flex-col md:flex-row items-center max-w-7xl mx-auto px-8 py-20 gap-16">
+        <div className="flex-1 space-y-8">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 rounded-full text-sm font-semibold border border-blue-100">
+            <SparklesIcon size={16} />
+            <span>AI-Powered Logistics Platform</span>
+          </div>
+          <h1 className="text-5xl md:text-7xl font-bold text-slate-900 leading-[1.1] tracking-tight">
+            Stop Fuel Theft. <br />
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">Start Saving.</span>
+          </h1>
+          <p className="text-lg md:text-xl text-slate-600 max-w-lg leading-relaxed">
+            Real-time ultrasonic fuel level monitoring combined with generative AI to detect anomalies, theft, and idling patterns instantly.
+          </p>
+          <div className="flex gap-4 pt-2">
+            <button 
+              onClick={() => setView('dashboard')}
+              className="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/25"
+            >
+              Start Monitoring
+            </button>
+            <button className="px-8 py-4 rounded-xl font-bold text-lg text-slate-700 border border-slate-200 hover:bg-slate-50 transition hover:border-slate-300">
+              Book Demo
+            </button>
+          </div>
+        </div>
+        <div className="flex-1 relative w-full">
+          <div className="absolute -inset-4 bg-gradient-to-r from-blue-200 to-indigo-200 rounded-[2rem] blur-3xl opacity-40 z-0"></div>
+          <img 
+            src="https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=80&w=2070&auto=format&fit=crop" 
+            alt="Trucking Fleet" 
+            className="rounded-2xl shadow-2xl relative z-10 border-4 border-white w-full object-cover aspect-[4/3]"
+          />
+          <div className="absolute -bottom-8 -left-8 bg-white p-6 rounded-2xl shadow-xl z-20 border border-slate-100 hidden md:block animate-bounce-slow">
+            <div className="flex items-center gap-4">
+              <div className="p-4 bg-green-100 text-green-600 rounded-xl">
+                <Droplet size={28} fill="currentColor" />
+              </div>
+              <div>
+                <p className="text-sm text-slate-500 font-medium">Fuel Saved Today</p>
+                <p className="text-3xl font-bold text-slate-900">1,240 gal</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Solutions Section */}
+      <section id="solutions" className="py-24 bg-slate-50">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-blue-600 font-bold tracking-wide uppercase text-sm mb-3">Our Solutions</h2>
+            <h3 className="text-4xl font-bold text-slate-900 mb-4">Everything you need to run an efficient fleet</h3>
+            <p className="text-slate-600 max-w-2xl mx-auto text-lg">We combine cutting-edge hardware with powerful software to give you complete visibility over your most expensive asset.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {[
+              { 
+                icon: <ShieldCheck size={32} />, 
+                title: "Theft Prevention", 
+                desc: "Instant alerts for rapid fuel drops when the ignition is off. Geofenced incidents help recovery and prosecution." 
+              },
+              { 
+                icon: <BarChart3 size={32} />, 
+                title: "Smart Analytics", 
+                desc: "Gemini-powered insights analyze historical data to recommend route changes and driver coaching." 
+              },
+              { 
+                icon: <Zap size={32} />, 
+                title: "Efficiency Boosting", 
+                desc: "Monitor idling time and aggressive driving behaviors that burn excess fuel. Save up to 15% annually." 
+              }
+            ].map((item, i) => (
+              <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition group">
+                <div className="w-14 h-14 bg-blue-50 rounded-xl flex items-center justify-center text-blue-600 mb-6 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                  {item.icon}
+                </div>
+                <h4 className="text-xl font-bold text-slate-900 mb-3">{item.title}</h4>
+                <p className="text-slate-600 leading-relaxed">{item.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Hardware Section */}
+      <section id="hardware" className="py-24 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="flex flex-col lg:flex-row items-center gap-16">
+            <div className="lg:w-1/2 relative">
+               <div className="absolute inset-0 bg-blue-600 rounded-3xl rotate-3 opacity-10"></div>
+               <img 
+                 src="https://images.unsplash.com/photo-1581092921461-eab62e97a780?q=80&w=2070&auto=format&fit=crop" 
+                 alt="Orca Sense Sensor" 
+                 className="rounded-3xl shadow-2xl relative z-10 w-full"
+               />
+               <div className="absolute bottom-6 right-6 bg-white/90 backdrop-blur p-4 rounded-xl border border-white/50 shadow-lg z-20">
+                 <div className="flex items-center gap-3">
+                   <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                   <span className="font-mono text-sm text-slate-700">Status: Active</span>
+                 </div>
+               </div>
+            </div>
+            <div className="lg:w-1/2 space-y-8">
+              <div>
+                <h2 className="text-blue-600 font-bold tracking-wide uppercase text-sm mb-3">The Hardware</h2>
+                <h3 className="text-4xl font-bold text-slate-900 mb-6">Meet Orca Sense. <br/>Install in minutes, lasts for years.</h3>
+                <p className="text-slate-600 text-lg mb-6">
+                  Our non-invasive ultrasonic sensors attach to the bottom of any fuel tank without drilling. Ruggedized for the harshest road conditions.
+                </p>
+              </div>
+              
+              <div className="space-y-4">
+                {[
+                  { icon: <Radio size={20} />, text: "LTE-M & NB-IoT Global Connectivity" },
+                  { icon: <Battery size={20} />, text: "5-Year Battery Life (Replaceable)" },
+                  { icon: <Wifi size={20} />, text: "0.5% Accuracy Precision" },
+                  { icon: <ShieldCheck size={20} />, text: "IP69K Waterproof & Dustproof" }
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-4">
+                    <div className="p-2 bg-slate-100 rounded-lg text-slate-700">
+                      {feature.icon}
+                    </div>
+                    <span className="font-medium text-slate-800">{feature.text}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <button className="text-blue-600 font-bold flex items-center gap-2 hover:gap-3 transition-all group">
+                View Tech Specs <span className="group-hover:translate-x-1 transition-transform">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section id="pricing" className="py-24 bg-orca-900 text-white">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-blue-400 font-bold tracking-wide uppercase text-sm mb-3">Pricing</h2>
+            <h3 className="text-4xl font-bold text-white mb-4">Simple, transparent pricing</h3>
+            <p className="text-slate-400 max-w-xl mx-auto">No hidden fees. Pause or cancel anytime. Hardware included in annual plans.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {/* Starter */}
+            <div className="bg-orca-800 border border-orca-700 rounded-2xl p-8 flex flex-col">
+              <div className="mb-6">
+                <h4 className="text-xl font-bold text-white mb-2">Starter</h4>
+                <p className="text-slate-400 text-sm">For small fleets just getting started.</p>
+              </div>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-white">$15</span>
+                <span className="text-slate-400"> /truck/mo</span>
+              </div>
+              <ul className="space-y-4 mb-8 flex-1">
+                {["Real-time tracking", "Basic fuel reports", "Email alerts", "Mobile App access"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
+                    <Check size={16} className="text-blue-400" /> {item}
+                  </li>
+                ))}
+              </ul>
+              <button className="w-full py-3 bg-orca-700 hover:bg-orca-600 text-white rounded-xl font-semibold transition">Get Started</button>
+            </div>
+
+            {/* Pro */}
+            <div className="bg-white text-slate-900 rounded-2xl p-8 flex flex-col relative transform md:-translate-y-4 shadow-xl">
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wide">
+                Most Popular
+              </div>
+              <div className="mb-6">
+                <h4 className="text-xl font-bold text-slate-900 mb-2">Professional</h4>
+                <p className="text-slate-500 text-sm">Full visibility and AI insights.</p>
+              </div>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-slate-900">$29</span>
+                <span className="text-slate-500"> /truck/mo</span>
+              </div>
+              <ul className="space-y-4 mb-8 flex-1">
+                {["Everything in Starter", "Gemini AI Analysis", "Theft Prediction Models", "Driver Behavior Score", "Unlimited History"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-700 text-sm">
+                    <div className="bg-blue-100 p-0.5 rounded-full">
+                      <Check size={14} className="text-blue-600" />
+                    </div> 
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <button className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-semibold transition shadow-lg">Start Free Trial</button>
+            </div>
+
+            {/* Enterprise */}
+            <div className="bg-orca-800 border border-orca-700 rounded-2xl p-8 flex flex-col">
+              <div className="mb-6">
+                <h4 className="text-xl font-bold text-white mb-2">Enterprise</h4>
+                <p className="text-slate-400 text-sm">For fleets with 100+ vehicles.</p>
+              </div>
+              <div className="mb-8">
+                <span className="text-4xl font-bold text-white">Custom</span>
+              </div>
+              <ul className="space-y-4 mb-8 flex-1">
+                {["Dedicated Support Manager", "Custom API Integration", "On-site Installation", "White-label Options"].map((item, i) => (
+                  <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
+                    <Check size={16} className="text-blue-400" /> {item}
+                  </li>
+                ))}
+              </ul>
+              <button className="w-full py-3 bg-orca-700 hover:bg-orca-600 text-white rounded-xl font-semibold transition">Contact Sales</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer Strip */}
+      <footer className="bg-orca-950 text-slate-400 py-12 border-t border-orca-800">
+        <div className="max-w-7xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="flex items-center gap-2 grayscale opacity-70 hover:opacity-100 transition">
+             <img src={LOGO_URL} alt="Orca" className="h-8 w-8 rounded-full" />
+             <span className="font-bold text-slate-300">ORCA CARGO</span>
+          </div>
+          <div className="flex gap-8 text-sm font-medium">
+            <a href="#" className="hover:text-white transition">Privacy</a>
+            <a href="#" className="hover:text-white transition">Terms</a>
+            <a href="#" className="hover:text-white transition">Status</a>
+            <a href="#" className="hover:text-white transition">Contact</a>
+          </div>
+          <div className="text-sm">© 2024 Orca Cargo Inc.</div>
+        </div>
+      </footer>
+    </div>
+  );
+
+  // Dashboard Component
+  const Dashboard = () => (
+    <div className="h-screen flex flex-col bg-slate-50 overflow-hidden relative">
+      {/* Dashboard Header */}
+      <header className="h-16 bg-white border-b border-slate-200 flex justify-between items-center px-6 z-10 shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setView('landing')}>
+            <img src={LOGO_URL} alt="Orca" className="h-10 w-10 rounded-full border border-slate-200" />
+            <span className="font-bold text-orca-900 text-xl tracking-tight hidden md:block">ORCA CARGO</span>
+          </div>
+          <div className="h-6 w-px bg-slate-200 mx-2 hidden md:block"></div>
+          <h1 className="text-slate-500 font-medium hidden md:block">Fleet Dashboard</h1>
+          <div className="px-2 py-1 bg-green-100 text-green-700 text-xs font-bold rounded uppercase tracking-wide flex items-center gap-1">
+            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+            Live
+          </div>
+        </div>
+        <div className="flex items-center gap-4">
+          <div className="relative hidden md:block">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+            <input 
+              type="text" 
+              placeholder="Search trucks..." 
+              className="pl-10 pr-4 py-2 bg-slate-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-64"
+            />
+          </div>
+          <button className="p-2 text-slate-500 hover:bg-slate-100 rounded-full relative">
+            <Bell size={20} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-red-500 rounded-full"></span>
+          </button>
+          <div className="h-8 w-8 bg-orca-700 rounded-full flex items-center justify-center text-white font-bold text-xs">
+            JD
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <div className="flex-1 flex overflow-hidden">
+        {/* Sidebar List */}
+        <TruckList trucks={trucks} selectedId={selectedTruckId} onSelect={setSelectedTruckId} />
+
+        {/* Main Panel */}
+        <main className="flex-1 overflow-y-auto p-6">
+          <div className="max-w-6xl mx-auto space-y-6">
+            
+            {/* Title & Actions */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-2xl font-bold text-slate-800">{selectedTruck.name}</h2>
+                <div className="flex items-center gap-2 text-slate-500 text-sm mt-1">
+                  <span className="font-medium">ID: {selectedTruck.id}</span>
+                  <span>•</span>
+                  <span>Driver: {selectedTruck.driver}</span>
+                  <span>•</span>
+                  <span className="flex items-center gap-1">
+                    <Map size={14} />
+                    {selectedTruck.location}
+                  </span>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <button className="px-4 py-2 bg-white border border-slate-200 rounded-lg text-slate-700 text-sm font-medium hover:bg-slate-50 shadow-sm">
+                  View History
+                </button>
+                <button className="px-4 py-2 bg-orca-900 text-white rounded-lg text-sm font-medium hover:bg-orca-800 shadow-md flex items-center gap-2">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  Live View
+                </button>
+              </div>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between transition-all duration-300">
+                <div>
+                  <p className="text-slate-500 text-sm font-medium mb-1">Current Level</p>
+                  <p className="text-3xl font-bold text-slate-800 tabular-nums">{Math.round(selectedTruck.fuelLevel)}%</p>
+                  <p className="text-xs text-slate-400 mt-1 tabular-nums">
+                    {(selectedTruck.capacity * (selectedTruck.fuelLevel / 100)).toFixed(1)} / {selectedTruck.capacity} gal
+                  </p>
+                </div>
+                <div className={`p-4 rounded-full transition-colors duration-500 ${selectedTruck.fuelLevel < 20 ? 'bg-red-50 text-red-500' : 'bg-blue-50 text-blue-500'}`}>
+                  <Droplet size={32} fill={selectedTruck.fuelLevel < 20 ? 'currentColor' : 'none'} />
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-slate-500 text-sm font-medium mb-1">Efficiency</p>
+                  <p className="text-3xl font-bold text-slate-800">{selectedTruck.currentMpg.toFixed(1)} <span className="text-lg text-slate-400 font-normal">mpg</span></p>
+                  <p className="text-xs text-green-600 mt-1 font-medium flex items-center">
+                    +0.4 mpg vs fleet avg
+                  </p>
+                </div>
+                <div className="p-4 rounded-full bg-green-50 text-green-600">
+                  <Gauge size={32} />
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                <div>
+                  <p className="text-slate-500 text-sm font-medium mb-1">Est. Range</p>
+                  <p className="text-3xl font-bold text-slate-800 tabular-nums">
+                    {Math.round((selectedTruck.capacity * (selectedTruck.fuelLevel / 100)) * selectedTruck.currentMpg)} 
+                    <span className="text-lg text-slate-400 font-normal"> mi</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    Based on current consumption
+                  </p>
+                </div>
+                <div className="p-4 rounded-full bg-indigo-50 text-indigo-500">
+                  <Map size={32} />
+                </div>
+              </div>
+            </div>
+
+            {/* Main Charts & Insights */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-auto lg:h-[500px]">
+              {/* Chart Section */}
+              <div className="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm p-6 flex flex-col">
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className="font-bold text-slate-800 flex items-center gap-2">
+                    <LayoutDashboard size={18} className="text-slate-400" />
+                    Fuel Consumption Trend
+                  </h3>
+                  <select className="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-lg px-3 py-1 focus:ring-2 focus:ring-blue-500 outline-none">
+                    <option>Last 12 Hours</option>
+                    <option>Last 24 Hours</option>
+                    <option>Last 7 Days</option>
+                  </select>
+                </div>
+                <div className="flex-1 w-full min-h-[300px]">
+                  <FuelChart 
+                    data={selectedTruck.history} 
+                    color={selectedTruck.fuelLevel < 20 ? '#ef4444' : '#3b82f6'} 
+                  />
+                </div>
+              </div>
+
+              {/* AI Insights Section */}
+              <div className="lg:col-span-1 h-full min-h-[400px]">
+                <AIInsightPanel selectedTruck={selectedTruck} />
+              </div>
+            </div>
+
+          </div>
+        </main>
+      </div>
+      
+      {/* Global Fleet Chat */}
+      <FleetChat trucks={trucks} />
+    </div>
+  );
+
+  return view === 'landing' ? <LandingPage /> : <Dashboard />;
+}
+
+// Icon Helper for Sparkles (not exported in basic lucide set sometimes, simulating custom icon)
+const SparklesIcon = ({ size }: { size: number }) => (
+  <svg 
+    xmlns="http://www.w3.org/2000/svg" 
+    width={size} 
+    height={size} 
+    viewBox="0 0 24 24" 
+    fill="none" 
+    stroke="currentColor" 
+    strokeWidth="2" 
+    strokeLinecap="round" 
+    strokeLinejoin="round"
+  >
+    <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+    <path d="M5 3v4" />
+    <path d="M9 3v4" />
+    <path d="M7 5h4" />
+  </svg>
+);
