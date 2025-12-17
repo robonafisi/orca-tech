@@ -390,7 +390,7 @@ export default function App() {
                   { icon: <Radio size={20} />, text: "LTE Global Connectivity" },
                   { icon: <Battery size={20} />, text: "Instant savings that bring ROI immediately" },
                   { icon: <Wifi size={20} />, text: "0.5% Accuracy Precision" },
-                  { icon: <ShieldCheck size={20} />, text: "Waterproof, Dustproof, and safety rated housing" }
+                  { icon: <ShieldCheck size={20} />, text: "Waterproof, dustproof, and safety rated housing" }
                 ].map((feature, i) => (
                   <div key={i} className="flex items-center gap-4">
                     <div className="p-2 bg-slate-100 rounded-lg text-slate-700">
@@ -424,7 +424,7 @@ export default function App() {
               </div>
               <div className="mb-8">
                 <span className="text-4xl font-bold text-white">$20</span>
-                <span className="text-slate-400"> /truck/mo</span>
+                <span className="text-slate-400"> /device/mo</span>
               </div>
               <ul className="space-y-4 mb-8 flex-1">
                 {["Real-time tracking", "Basic fuel reports", "Email alerts", "Mobile App access"].map((item, i) => (
@@ -455,8 +455,8 @@ export default function App() {
                 <p className="text-slate-500 text-sm">Full visibility and AI insights.</p>
               </div>
               <div className="mb-8">
-                <span className="text-4xl font-bold text-slate-900">$300</span>
-                <span className="text-slate-500"> /truck/mo</span>
+                <span className="text-4xl font-bold text-slate-900">$150</span>
+                <span className="text-slate-500"> /device/mo</span>
               </div>
               <ul className="space-y-4 mb-8 flex-1">
                 {["Everything in Starter", "Fuel optimization Model", "Theft Prediction Model", "Driver Behavior Score", "Unlimited History"].map((item, i) => (
