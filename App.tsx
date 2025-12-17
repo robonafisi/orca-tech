@@ -274,12 +274,13 @@ export default function App() {
           
           <div className="flex gap-4 pt-4">
             {/* Directs to the new 'login' view */}
+            <Link href={destinationUrl1}>
             <button 
-              onClick={() => setView('login')}
               className="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition shadow-lg hover:shadow-blue-500/25"
             >
               Start Monitoring
             </button>
+            </Link>
           
             <Link href={destinationUrl1}>
             <button className="px-8 py-4 rounded-xl font-bold text-lg text-slate-700 border border-slate-200 hover:bg-slate-50 transition hover:border-slate-300">
@@ -316,7 +317,7 @@ export default function App() {
           <div className="text-center mb-16">
             <h2 className="text-blue-600 font-bold tracking-wide uppercase text-sm mb-3">Our Solutions</h2>
             <h3 className="text-4xl font-bold text-slate-900 mb-4">Everything you need to run an efficient fleet</h3>
-            <p className="text-slate-600 max-w-2xl mx-auto text-lg">We combine cutting-edge hardware with powerful software to give you complete visibility over your most expensive asset.</p>
+            <p className="text-slate-600 max-w-2xl mx-auto text-lg">We combine cutting-edge hardware with powerful software to give you complete visibility over your most expensive cost center.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -329,12 +330,12 @@ export default function App() {
               { 
                 icon: <BarChart3 size={32} />, 
                 title: "Smart Analytics", 
-                desc: "Gemini-powered insights analyze historical data to recommend route changes and driver coaching." 
+                desc: "Advanced insights to analyze historical data to recommend route changes and driver coaching." 
               },
               { 
                 icon: <Zap size={32} />, 
                 title: "Efficiency Boosting", 
-                desc: "Monitor idling time and aggressive driving behaviors that burn excess fuel. Save up to 15% annually." 
+                desc: "Monitor idling time and aggressive driving behaviors that burn excess fuel. Leverage live data to cut your top operational cost center and ensure your drivers operate safely." 
               }
             ].map((item, i) => (
               <div key={i} className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 hover:shadow-md transition group">
@@ -364,18 +365,18 @@ export default function App() {
             <div className="lg:w-1/2 space-y-8">
               <div>
                 <h2 className="text-blue-600 font-bold tracking-wide uppercase text-sm mb-3">The Hardware</h2>
-                <h3 className="text-4xl font-bold text-slate-900 mb-6">Meet Orca Sense. <br/>Install in minutes, lasts for years.</h3>
+                <h3 className="text-4xl font-bold text-slate-900 mb-6">Meet Orca Sense. <br/>Install in minutes, save time and money for years.</h3>
                 <p className="text-slate-600 text-lg mb-6">
-                  Our non-invasive ultrasonic sensors attach to the bottom of any fuel tank without drilling. Ruggedized for the harshest road conditions.
+                  Our sensor has water proof housing and uses ultra low power, making it easy to install, maintain, and extremely safe. Our sensors attach to the bottom of any fuel tank without drilling. Ruggedized for the harshest road conditions.
                 </p>
               </div>
               
               <div className="space-y-4">
                 {[
-                  { icon: <Radio size={20} />, text: "LTE-M & NB-IoT Global Connectivity" },
-                  { icon: <Battery size={20} />, text: "5-Year Battery Life (Replaceable)" },
+                  { icon: <Radio size={20} />, text: "LTE Global Connectivity" },
+                  { icon: <Battery size={20} />, text: "Instant savings that bring ROI immediately" },
                   { icon: <Wifi size={20} />, text: "0.5% Accuracy Precision" },
-                  { icon: <ShieldCheck size={20} />, text: "IP69K Waterproof & Dustproof" }
+                  { icon: <ShieldCheck size={20} />, text: "Waterproof, Dustproof, and safety rated housing" }
                 ].map((feature, i) => (
                   <div key={i} className="flex items-center gap-4">
                     <div className="p-2 bg-slate-100 rounded-lg text-slate-700">
@@ -444,7 +445,7 @@ export default function App() {
                 <span className="text-slate-500"> /truck/mo</span>
               </div>
               <ul className="space-y-4 mb-8 flex-1">
-                {["Everything in Starter", "Gemini AI Analysis", "Theft Prediction Models", "Driver Behavior Score", "Unlimited History"].map((item, i) => (
+                {["Everything in Starter", "Fuel optimization Model", "Theft Prediction Model", "Driver Behavior Score", "Unlimited History"].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-700 text-sm">
                     <div className="bg-blue-100 p-0.5 rounded-full">
                       <Check size={14} className="text-blue-600" />
@@ -468,7 +469,7 @@ export default function App() {
                 <span className="text-4xl font-bold text-white">Custom</span>
               </div>
               <ul className="space-y-4 mb-8 flex-1">
-                {["Dedicated Support Manager", "Custom API Integration", "On-site Installation", "White-label Options"].map((item, i) => (
+                {["Dedicated Support Manager", "Custom API Integration", "On-site Installation", "3 year Warranty"].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-slate-300 text-sm">
                     <Check size={16} className="text-blue-400" /> {item}
                   </li>
@@ -490,10 +491,7 @@ export default function App() {
              <span className="font-bold text-black">ORCA Trucks</span>
           </div>
           <div className="flex gap-8 text-sm font-medium">
-            <a href="#" className="hover:text-white transition">Privacy</a>
-            <a href="#" className="hover:text-white transition">Terms</a>
-            <a href="#" className="hover:text-white transition">Status</a>
-            <a href="#" className="hover:text-white transition">Contact</a>
+            <a href="https://cal.com/orca-trucks/30min" className="hover:text-white transition">Contact</a>
           </div>
         </div>
       </footer>
