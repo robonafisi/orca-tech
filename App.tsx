@@ -134,7 +134,7 @@ export default function App() {
     const handleSubmit = (e: React.FormEvent) => {
       e.preventDefault();
       if (!handleLogin(username, password)) {
-        setError('Invalid username or password. (Hint: fleetmanager / orca123)');
+        setError('Invalid username or password.');
       }
     };
 
